@@ -29,7 +29,7 @@ This is a document with tips for how to get started with CTFs.
 - https://github.com/zardus/wargame-nexus
 
 ## Basic Tools
-These are tools that are used often in CTFs. There are definitely more specialized tools for different purposes out there, but these are a couple to get you started. 
+These are tools that are used often in CTFs. There are definitely more specialized tools for different purposes out there, but these are a couple to get you started. (You can also find more [here](https://gist.github.com/ZetaTwo/40976c9ed8b9abb81e44c872b3a68551).)
 
 ### Scripting
 CTF players often use Python for scripting, you can certainly use other languages as well, but there is a lot of tooling in Python.
@@ -46,6 +46,13 @@ The rev and PWN categories focus on analysing binaries. To do that you need a go
 - [Ghidra](https://ghidra-sre.org/)
 - [Binary Ninja](https://binary.ninja/)
 
+Disassemblers are good for static analysis, but if you want to investigate the
+binary while it is running (dynamic analysis), you are going to need a debugger:
+
+- gdb: For linux.
+- [GEF](https://gef.readthedocs.io/en/master/): Enhancement to make gdb more useful (and beautiful). ([pwndbg](https://github.com/pwndbg/pwndbg) also exists)
+- [x86dbg](https://x64dbg.com/): For windows.
+
 There are also a couple other command line tools that are useful for looking at 
 binaries:
 
@@ -57,9 +64,7 @@ binaries:
 ### PWN
 When you need to build a ROP chain, you can use any of the following tools to
 find gadgets:
-- [ROPgadget](http://shell-storm.org/project/ROPgadget/): General purpose gadget finder. 
-- [Ropper](https://github.com/sashs/ropper): General purpose gadget finder.
-- [rp++](https://github.com/0vercl0k/rp): General purpose gadget finder.
+- [rp++](https://github.com/0vercl0k/rp): General purpose gadget finder ([Ropper](https://github.com/sashs/ropper) and [ROPgadget](http://shell-storm.org/project/ROPgadget/) also exist).
 - [one_gadget](https://github.com/david942j/one_gadget): Finds you a /bin/sh gadget at once.
 
 Finding libc based on libc function offsets:
@@ -73,6 +78,10 @@ Finding libc based on libc function offsets:
 - [Wappalyzer](https://www.wappalyzer.com/): Browser extension which gives a quick glance at what a website is built with.
 - [ngrok](https://ngrok.com/): Get a temporary domain for a local service.
 
+### Cryptography
+
+- [quipqiup](https://quipqiup.com/): A solver of English substitution ciphers.
+
 ### Steganography
 
 - [Stegsolve](http://www.caesum.com/handbook/Stegsolve.jar): Multitool
@@ -83,6 +92,10 @@ Finding libc based on libc function offsets:
 - foremost: Like binwalk.
 - [010editor (free trial)](https://www.sweetscape.com/010editor/): Great hex editor for investigating file formats. Shows the structure of the file.
 - [kaitai web IDE](https://ide.kaitai.io/): Similar to 010editor.
+
+### Network analysis
+
+- [Wireshark](https://www.wireshark.org/)
 
 ### Misc
 
