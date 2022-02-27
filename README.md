@@ -136,6 +136,7 @@ Finding libc based on libc function offsets:
 ### Cryptography
 
 - [quipqiup](https://quipqiup.com/): A solver of English substitution ciphers.
+- [dcode.fr](https://www.dcode.fr/): Has solvers for a bunch of classical ciphers
 
 ### Steganography
 
