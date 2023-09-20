@@ -51,17 +51,6 @@ behavior. For example using a debugger `gdb` or some other tracing program
 application. Instead you read the disassembly and decompilation and think
 about what it is doing.
 
-### Representing things with bytes
-
-
-### Endianness
-
-
-### Packing in Python
-
-- https://docs.python.org/3/library/struct.html
-- https://docs.pwntools.com/en/latest/intro.html#packing-integers
-
 ### Assembly
 
 Assembly code is what your CPU actually runs ([not actually, but close
@@ -78,8 +67,61 @@ and servers at the moment. ARM is most common on handheld devices such as
 smartphones, etc. We will see what happens in the future, if ARM will take
 over the desktop market.
 
-- mention and show objdump
+When thinking about assembly as a programming language, we can look at some similarities and differences:
 
+| x86                                                 | Programming language                   |
+|-----------------------------------------------------|----------------------------------------|
+| [Instruction](#instructions)                        | Statement                              |
+| [Registers](#registers)                             | Variables                              |
+| [Memory](#memory)                                   | No corresponding construct / Variables |
+| [Untyped language](#representing-things-with-bytes) | Types exist                            |
+| `cmp` and jump instructions                         | `if`, `while`, `for`                   |
+| `call` and `ret`                                    | Calling and returning from functions   |
+
+### Instructions
+
+Here is a small C program:
+
+```c
+int a = 5;
+int b = 7;
+b += b;
+b -= a;
+int c = b;
+c ^= a;
+```
+
+And here is a corresponding assembly program:
+
+```
+mov rax, 5
+mov rbx, 7
+add rbx, rbx
+sub rbx, rax
+mov rcx, rbx
+xor rcx, rax
+```
+
+Notice how all binary operands store the result in the left-most register. They
+generally take the form: `instr operand1, operand2` and perform `operand1 =
+operand1 instr operand2`.
+
+Here are some categories of instructions which are often used:
+
+- **Integer operations**: `add`, `sub`, `mul`, `div`, `xor`, `and`, `or`, etc.
+- **Conditional control flow**: `cmp`, `jeq`, `jne`, `jle`, etc.
+- **Unconditional control flow**: `jmp`
+- **Function call/ret**: `call`, `ret`
+- **Moving between registers**: `mov`
+- **Loading/storing in memory**: `mov rax, [rbx]`, `mov [rbx], rax`, etc.
+- **Stack operations**: `push`, `pop`, `leave`
+
+If you want a complete list of instructions, or just read the description
+of some instruction, consult the following:
+
+- Good online reference, based on the manual: https://www.felixcloutier.com/x86/
+- Intel's complete manual of x86 (warning, 5000 pages!): https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4
+- Just Google(/Chat-GPT?) it: `what does the x86 GF2P8AFFINEINVQB instruction do?`
 
 ### Disassembling with objdump
 
@@ -168,26 +210,83 @@ mov src, dst
 mov 5, %rax
 ```
 
-### Assembly registers
+### Registers
+
+Registers are variables that live in the CPU. There are many of them, for
+different purposes, but there are only 16 general-purpose registers which
+you will normally deal with. Each of the general-purpose registers is 64-bits
+or 8 bytes large. Some of them have special roles. Here they are:
+
+- RAX, RBX, RCX, RDX
+- RSI, RDI
+- RSP - The stack pointer. Points to the top of the [stack](#the-stack).
+- RBP - The base pointer. Points to the bottom of the current [stack](#the-stack) frame.
+- R8, R9, R10, R11, R12, R13, R14, R15
+- RIP - The instruction pointer. Points to the current instruction which is about to be executed.
+
+Sometimes you may see other registers than these. For example `eax`,
+`ebx`, `al`, or maybe `r10w`. These still refer to the previously mentioned
+registers, but to different parts of them. For example, let's look at RAX
+and its sub-registers:
+
+```
+63rd bit        31st bit       0th bit
+[                           RAX] - 64 bit / 8 bytes, full register
+                [           EAX] - Lowest 32 bits / 4 bytes of RAX
+                        [    AX] - Lowest 16 bits / 2 bytes of RAX
+                        [AH][AL] - AL: Lowest 8 bits / 1 byte of RAX
+                                 - AH: Second lowest 8 bits / 1 byte of RAX
+```
+
+For a list and diagram over all registers, see here:
 
 - https://sandpile.org/x86/gpr.htm
 
-### The memory
+### Representing things with bytes
 
+TODO:
+- Everything can be represented with bytes
+
+### Endianness
+
+TODO:
+- Big endian / MSB first - Natural when you think about it
+- Little endian / LSB first - The reverse. What we actually have.
+
+### Packing in Python
+
+TODO:
+- https://docs.python.org/3/library/struct.html
+- https://docs.pwntools.com/en/latest/intro.html#packing-integers
+
+### Memory
+
+TODO:
+- What is memory, addresses: array of bytes and index in that array
+- Show assembly `mov` load store syntax: QWORD, DWORD, etc.
 
 ### The stack
 
+TOOD:
+- Push, pop
+- Frames
+- Where local variables are stored
+- Return pointer
 
 ### Calling convetions
 
+TODO:
+- Mention order of arguments: rdi, rsi, etc.
 
 ### Stripped vs. Non-stripped
 
+TODO:
 - Strip symbols from a binary with `strip ./a.out`
 - Use `nm ./a.out` to list the symbols in a binary
 
 ### Dynamic vs. Static linking
 
+TODO:
 - Compile with flag `-static` to get a static binary: `gcc -static code.c`
 - Use `ldd ./a.out` to see if a binary is static or if it is dynamic and in
   that case which libraries it uses.
@@ -198,29 +297,115 @@ Some tips on how you actually reverse stuff.
 
 ### What to do first?
 
-- file
-- strings
-- checksec
+TODO:
+- `file ./binary`
+- `strings ./binary`
+- `pwn checksec ./binary`
 - open in ghidra and have a look
 - run it. You could also run it first.
+- When you know what you want to look at specifically, use gdb.
 
 ### Using Ghidra
 
-- How to start a project and import a binary (long way)
+When you open up Ghidra and go "wtf is this, I just want to reverse a binary",
+this is how you do it:
+
+1. File -> New Project
+2. Choose Non-shared Project
+3. Pick a directory to store the project in and a name
+4. File -> Import File
+5. Pick your binary
+6. Click Ok two times
+7. Double click your newly imported binary so that it opens in the CodeBrowser (green dragon icon)
+8. Click Yes to analyzing the binary
+9. Click Analyze without changing anything
+10. 9 steps later, and you are done! Now the fun begins.
+
+Navigate to the main function by searching for `main` in the "Symbol Tree"
+which should be on the left side of the screen. Alternatively you can use the
+amazing `g` hotkey to go to main: press `g`, type `main`, press enter. You
+can also use `g` to go to any address.
+
+If you can't find main, look for a `start` or `entry` function and then read
+[Getting to main](#getting-to-main).
+
+TODO:
 - Renaming variables
 - Retyping variables
-- Hotkeys (like G)
 
 ### Getting to main
 
-- libc_start_main
+TODO:
+- `__libc_start_main`: The first argument to the `__libc_start_main`
+function call inside of the entry point function is a pointer to the real
+`main` function.
 
 ### Using GDB
 
-- Command cheat sheet
-- Dealing with PIE binaries
+Start gdb like this: `gdb ./a.out`. Here are a bunch of commands you will
+likely want to use:
+
+| Command         | Comment                                                                  |
+|-----------------|--------------------------------------------------------------------------|
+| `r`             | Run the program                                                          |
+| `r < input.txt` | Run the program. Feed in `input.txt` as stdin.                           |
+| `r ARG1 ARG2`   | Run the program. Send `ARG1` and `ARG2` as command line arguments.       |
+| `start`         | Run and stop at the first instruction.                                   |
+| `b main`        | Set a breakpoint at function `main`                                      |
+| `b *0x12345678` | Set a breakpoint at address `0x12345678`                                 |
+| `pie br 0x1234` | Set a breakpoint at PIE offset `0x1234`. Requires GEF                    |
+| `c`             | Continue running until next breakpoint.                                  |
+| `ni`            | Next instruction. Steps one instruction forward. Will jump over `call`s. |
+| `si`            | Step instruction. Steps one instruction forward. Will jump into `call`s. |
+| `x/*`           | Examine memory, see below for more details.                              |
+| `disass`        | Disassemble current function.                                            |
+| `disass foo`    | Disassemble function `foo`.                                              |
+| `i r`           | Print all registers.                                                     |
+| `i r rax`       | Print only RAX.                                                          |
+| `set $rax = 5`  | Sets RAX to 5.                                                           |
+| `vmmap`         | View the virtual memory map.                                             |
+| `q`             | Quit gdb.                                                                |
+
+One very useful command needs to be explained in more detail: `x/*`, the examine memory command. You can use it to look at memory in many ways, here are some examples:
+
+- `x/4gx 0x12345678` - Print 4 64-bit numbers in hexadecimal, from address 0x12345678.
+- `x/10bd $rsp + 10` - Print 10 8-bit numbers in signed decimal form, from the address stored in `rsp` plus 10.
+- `x/10i $rip` - Print the 10 next instructions.
+- `x/s $rdx` - Print the string pointed to by `rdx`.
+
+The general syntax is like this:
+
+```
+x/[count][size][format] [address]
+```
+
+Where `[count]` is an integer of how many to print. `[size]` says how large
+each element is:
+
+- `b` - byte - 1 byte
+- `h` - half word - 2 bytes
+- `w` - word - 4 bytes
+- `g` - giant word - 8 bytes
+
+The `[format]` argument can be any of the following:
+
+- `x` - hexadecimal
+- `o` - octal (probably works?)
+- `u` - unsigned decimal
+- `d` - signed decimal
+- `i` - one instruction, the `[size]` is implicit.
+- `s` - one string, until the next null byte, the `[size]` is implicit.
+
+Finally, `[address]` can be a constant address, or an arithmetic
+expression based on registers. Official documentation for examine:
+https://ftp.gnu.org/old-gnu/Manuals/gdb-5.1.1/html_chapter/gdb_9.html#SEC56
 
 ### Ignoring the constant stuff
+
+TODO:
+- Try to find the part of the algorithm that depends on the input. Everything
+that happened before that can be viewed as constant and can be extracted
+using gdb if necessary.
 
 ## Tools
 
