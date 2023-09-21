@@ -261,9 +261,35 @@ TODO:
 
 ### Memory
 
+You can think about memory as a big array of bytes. The index to that array
+is called an address. When you see memory operations in assembly, it can
+be for different reasons: accessing local variables, global variables,
+heap variables. etc. This is how you read and write to memory in x86:
+
+```
+# Read 1 byte from the address in RSI, to register CL:
+mov CL, BYTE PTR [RSI]
+
+# Write the contents of RAX (8 bytes) to the address in RDX:
+mov QWORD PTR [RDX], RAX
+
+# Read 2 bytes from the address in RDI plus 10, to register BX:
+mov BX, WORD PTR [RDI + 10]
+```
+
+When multiple bytes are read at a time, they are read from `address`,
+`address + 1`, etc. The size modifiers before the square brackets (`[...]`)
+are like this:
+
+| Modifier | Size    |
+|----------|---------|
+| `BYTE`   | 1 byte  |
+| `WORD`   | 2 bytes |
+| `DWORD`  | 4 bytes |
+| `QWORD`  | 8 bytes |
+
 TODO:
-- What is memory, addresses: array of bytes and index in that array
-- Show assembly `mov` load store syntax: QWORD, DWORD, etc.
+- How structures are placed in memory: Each field, adjacently, one after the other.
 
 ### The stack
 
@@ -321,17 +347,35 @@ this is how you do it:
 9. Click Analyze without changing anything
 10. 9 steps later, and you are done! Now the fun begins.
 
-Navigate to the main function by searching for `main` in the "Symbol Tree"
-which should be on the left side of the screen. Alternatively you can use the
-amazing `g` hotkey to go to main: press `g`, type `main`, press enter. You
-can also use `g` to go to any address.
+Here is an overview of Ghidra's interface (you might need to close the memory
+map and script console to get exactly the same):
 
-If you can't find main, look for a `start` or `entry` function and then read
+![Ghidra GUI overview](./ghidra_overview.png)
+
+In the middle, you have the assembly listing. This shows the program's
+assembly code and global variables in a linear fashion. On the right is
+the decompiler, showing an approximative decompilation of the currently
+visited function in the listing. The symbol tree to the top left is good for
+searching for functions. Finally, in the data type manager in the bottom left,
+you can create new structs which can be applied in the decompilation.
+
+Navigate to the main function by searching for `main` in the Symbol
+Tree. Alternatively you can use the amazing `g` hotkey to go to main: press
+`g`, type `main`, press enter. You can also use `g` to go to any address. If
+you can't find main, look for a `start` or `entry` function and then read
 [Getting to main](#getting-to-main).
 
-TODO:
-- Renaming variables
-- Retyping variables
+You will likely mostly be working in the decompiler view. There you can rename
+variables with better names and you can give them more appropriate types:
+
+- **Rename variable:** Right click variable name -> Rename variable. Or use the hotkey L.
+- **Retype variable:** Right click variable name -> Retype variable. Or use the hotkey Ctrl + L.
+
+How do you know when to retype a variable and what type to give it? This comes
+a bit with experience, but you generally look at how the variable is used and
+try to pick the type which "fits the best" with the rest of the code. "Fits the
+best" could mean "gives the nicest decompilation", "produces the fewest casts",
+etc. This does require being somewhat comfortable with the C type system.
 
 ### Getting to main
 
